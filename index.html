@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Blynk Sensor Kelembaban</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      .gauge {
+        width: 200px;
+        height: 200px;
+        display: inline-block;
+        margin: 20px;
+      }
+    </style>
+    <!-- Tambahkan JustGage dan Raphael -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.4.0/justgage.min.js"></script>
+  </head>
+  <body>
+    <h1>Data Blynk Sensor Kelembaban</h1>
+
+    <div class="gauge" id="gauge1"></div>
+    <div class="gauge" id="gauge2"></div>
+    <div class="gauge" id="gauge3"></div>
+    <div class="gauge" id="gauge4"></div>
+    <div class="gauge" id="gaugeAverage"></div>
+
+    <script>
+      const blynkToken = "duKOpwRdT2HL9F02YhfTLh2ENI8yS5rQ"; // Ganti dengan token Blynk Anda
+      const pins = [0, 1, 2, 3, 4]; // Virtual pins untuk kelembaban dan rata-rata
+      const gauges = [];
+
+      // Inisialisasi gauge
+      for (let i = 0; i < pins.length; i++) {
+        const gauge = new JustGage({
+          id: `gauge${i + 1}`,
+          value: 0,
+          min: 0,
+          max: 100,
+          title: `Kelembaban ${i + 1}`,
+          gaugeWidthScale: 1.6,
+          symbol: "%",
+        });
+        gauges.push(gauge);
+      }
+
+      function fetchData(pin, index) {
+        const url = `https://blynk.cloud/external/api/get?token=${blynkToken}&pin=V${pin}`; // URL Blynk
+        fetch(url)
+          .then((response) => response.text())
+          .then((data) => {
+            const value = parseFloat(data); // Parsing data sebagai float
+            if (!isNaN(value)) {
+              gauges[index].setValue(value); // Update gauge
+            } else {
+              console.error("Data tidak valid:", data);
+            }
+          })
+          .catch((error) => console.error("Error fetching data:", error));
+      }
+
+      function updateData() {
+        for (let i = 0; i < pins.length; i++) {
+          fetchData(pins[i], i);
+        }
+      }
+
+      setInterval(updateData, 10000); // Ambil data setiap 10 detik
+      updateData(); // Ambil data saat halaman dimuat
+    </script>
+  </body>
+</html>
